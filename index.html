@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GreenCorner Timetable</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7f1;
+      color: #162016;
+    }
+
+    header {
+      background: #1f6b3f;
+      color: white;
+      padding: 18px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    main {
+      padding: 14px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    button {
+      border: 0;
+      border-radius: 6px;
+      padding: 12px 14px;
+      background: #1f6b3f;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #555;
+    }
+
+    button.danger {
+      background: #a52f2f;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      background: white;
+      border: 1px solid #d7dfd1;
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border: 1px solid #d7dfd1;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #e6f0e3;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #c8d2c1;
+      border-radius: 5px;
+      padding: 9px;
+      font-size: 15px;
+    }
+
+    .note {
+      background: #fff8dc;
+      border: 1px solid #eadc9b;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 12px 0;
+    }
+
+    @media print {
+      .buttons,
+      .note {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GreenCorner Timetable</h1>
+    <div>Open 10:00 AM to 2:00 AM</div>
+  </header>
+
+  <main>
+    <div class="note">
+      Fill in the shifts, press <strong>Update Link</strong>, then press <strong>Share on WhatsApp</strong>.
+      Anyone with the link can open it, edit it, and share a new updated link.
+    </div>
+
+    <div class="buttons">
+      <button onclick="updateLink()">Update Link</button>
+      <button onclick="shareWhatsApp()">Share on WhatsApp</button>
+      <button class="secondary" onclick="copyLink()">Copy Link</button>
+      <button class="secondary" onclick="window.print()">Print</button>
+      <button class="danger" onclick="clearTimetable()">Clear</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Antonio</th>
+            <th>Lizzy</th>
+            <th>Sarih</th>
+            <th>Cole</th>
+            <th>Luis</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const workers = ["Antonio", "Lizzy", "Sarih", "Cole", "Luis"];
+    function buildTable() {
+      const saved = readFromLink();
+      const rows = document.getElementById("rows");
+      rows.innerHTML = "";
+
+      days.forEach(day => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<th>${day}</th>` + workers.map(worker => {
+          const id = `${day}-${worker}`;
+          return `<td><input id="${id}" value="${saved[id] || ""}" placeholder="e.g. 10-6 / off"></td>`;
+        }).join("");
+        rows.appendChild(tr);
+      });
+    }
+
+    function getData() {
+      const data = {};
+      days.forEach(day => {
+        workers.forEach(worker => {
+          const id = `${day}-${worker}`;
+          data[id] = document.getElementById(id).value.trim();
+        });
+      });
+      return data;
+    }
+
+    function readFromLink() {
+      const params = new URLSearchParams(location.hash.replace(/^#/, ""));
+      const data = params.get("t");
+      if (!data) return {};
+
+      try {
+        return JSON.parse(decodeURIComponent(escape(atob(data))));
+      } catch {
+        return {};
+      }
+    }
+
+    function timetableLink() {
+      const json = JSON.stringify(getData());
+      const encoded = btoa(unescape(encodeURIComponent(json)));
+      return `${location.origin}${location.pathname}#t=${encoded}`;
+    }
+
+    function updateLink() {
+      history.replaceState(null, "", timetableLink());
+      alert("Link updated. You can copy it or share it on WhatsApp.");
+    }
+
+    async function copyLink() {
+      updateLink();
+      await navigator.clipboard.writeText(location.href);
+      alert("Link copied.");
+    }
+
+    function clearTimetable() {
+      if (!confirm("Clear the whole timetable?")) return;
+      history.replaceState(null, "", `${location.origin}${location.pathname}`);
+      buildTable();
+    }
+
+    function makeMessage() {
+      const data = getData();
+      let message = "GreenCorner Timetable\nOpen: 10:00 AM - 2:00 AM\n\n";
+
+      days.forEach(day => {
+        message += `${day}\n`;
+        workers.forEach(worker => {
+          const shift = data[`${day}-${worker}`];
+          if (shift) message += `- ${worker}: ${shift}\n`;
+        });
+        message += "\n";
+      });
+
+      return message.trim();
+    }
+
+    function shareWhatsApp() {
+      history.replaceState(null, "", timetableLink());
+      const message = encodeURIComponent(`${makeMessage()}\n\nEdit timetable here:\n${location.href}`);
+      window.open(`https://wa.me/?text=${message}`, "_blank");
+    }
+
+    buildTable();
+  </script>
+</body>
+</html>
