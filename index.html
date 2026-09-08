@@ -171,21 +171,39 @@
     }
 
     function readFromLink() {
-      const params = new URLSearchParams(location.hash.replace(/^#/, ""));
-      const data = params.get("t");
+      const queryParams = new URLSearchParams(location.search);
+      const hashParams = new URLSearchParams(location.hash.replace(/^#/, ""));
+      const data = queryParams.get("t") || hashParams.get("t");
       if (!data) return {};
 
       try {
-        return JSON.parse(decodeURIComponent(escape(atob(data))));
+        return JSON.parse(decodeData(data));
       } catch {
         return {};
       }
     }
 
+    function encodeData(value) {
+      return btoa(unescape(encodeURIComponent(value)))
+        .replaceAll("+", "-")
+        .replaceAll("/", "_")
+        .replaceAll("=", "");
+    }
+
+    function decodeData(value) {
+      const normal = value.replaceAll("-", "+").replaceAll("_", "/");
+      const padded = normal + "=".repeat((4 - normal.length % 4) % 4);
+      return decodeURIComponent(escape(atob(padded)));
+    }
+
+    function cleanBaseUrl() {
+      return `${location.origin}${location.pathname}`;
+    }
+
     function timetableLink() {
       const json = JSON.stringify(getData());
-      const encoded = btoa(unescape(encodeURIComponent(json)));
-      return `${location.origin}${location.pathname}#t=${encoded}`;
+      const encoded = encodeData(json);
+      return `${cleanBaseUrl()}?t=${encoded}`;
     }
 
     function updateLink() {
@@ -201,7 +219,7 @@
 
     function clearTimetable() {
       if (!confirm("Clear the whole timetable?")) return;
-      history.replaceState(null, "", `${location.origin}${location.pathname}`);
+      history.replaceState(null, "", cleanBaseUrl());
       buildTable();
     }
 
