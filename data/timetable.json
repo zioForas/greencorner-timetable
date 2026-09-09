@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-09-09T02:09:57.606Z",
+  "updatedAt": "2026-09-09T02:10:01.978Z",
   "days": {
     "Monday": {
       "Antonio": "-",
       "Lizzy": "-",
       "Momo": "-",
-      "Cole": "",
+      "Cole": "10-6",
       "Luis": ""
     },
     "Tuesday": {
       "Antonio": "17:00 / 00:00",
       "Lizzy": "-",
       "Momo": "_______",
-      "Cole": "",
+      "Cole": "10-6",
       "Luis": ""
     },
     "Wednesday": {
       "Antonio": "OFF ",
       "Lizzy": "12:00 / ___",
       "Momo": "10:00 / ___",
-      "Cole": "",
+      "Cole": "10-6 ",
       "Luis": "6:00/2:00"
     },
     "Thursday": {
       "Antonio": "-",
       "Lizzy": "-",
       "Momo": "-",
-      "Cole": "",
-      "Luis": "6:00/2:00"
+      "Cole": "6-2",
+      "Luis": ""
     },
     "Friday": {
       "Antonio": "-",
       "Lizzy": "-",
       "Momo": "-",
-      "Cole": "",
-      "Luis": "6:00/2:00"
+      "Cole": "10-6",
+      "Luis": ""
     },
     "Saturday": {
       "Antonio": "-",
