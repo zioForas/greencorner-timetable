@@ -192,7 +192,8 @@
       return days.flatMap((day, dayIndex) => {
         return workers.map((worker, workerIndex) => {
           const value = data[`${day}-${worker}`];
-          return value ? `${dayIndex}.${workerIndex}.${value}` : "";
+          const position = dayIndex * workers.length + workerIndex;
+          return value ? `${position.toString(36)}:${value}` : "";
         });
       }).filter(Boolean).join("|");
     }
@@ -202,10 +203,12 @@
 
       const data = {};
       value.split("|").forEach(part => {
-        const [dayIndex, workerIndex, ...shiftParts] = part.split(".");
-        const day = days[Number(dayIndex)];
-        const worker = workers[Number(workerIndex)];
-        const shift = shiftParts.join(".");
+        const separator = part.indexOf(":");
+        if (separator === -1) return;
+        const position = parseInt(part.slice(0, separator), 36);
+        const day = days[Math.floor(position / workers.length)];
+        const worker = workers[position % workers.length];
+        const shift = part.slice(separator + 1);
         if (day && worker && shift) data[`${day}-${worker}`] = shift;
       });
       return data;
@@ -273,7 +276,7 @@
 
     function shareWhatsApp() {
       history.replaceState(null, "", timetableLink());
-      const message = encodeURIComponent(`${makeMessage()}\n\nEdit timetable here:\n${location.href}`);
+      const message = encodeURIComponent(`Edit GreenCorner timetable:\n${location.href}\n\n${makeMessage()}`);
       window.open(`https://wa.me/?text=${message}`, "_blank");
     }
 
