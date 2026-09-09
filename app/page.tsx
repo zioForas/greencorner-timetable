@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const workers = ["Antonio", "Lizzy", "Sarih", "Cole", "Luis"];
+const workers = ["Antonio", "Lizzy", "Momo", "Cole", "Luis"];
 
 type Timetable = {
   updatedAt: string;
